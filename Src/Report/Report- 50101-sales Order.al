@@ -2,7 +2,7 @@ report 50101 "Sales Order Report"
 {
     UsageCategory = ReportsAndAnalysis;
     ApplicationArea = All;
-    RDLCLayout = 'src/report layout/Sales Order -4.rdl';
+    RDLCLayout = 'src/report layout/Sales Order -5.rdl';
     DefaultLayout = RDLC;
 
     dataset
@@ -125,7 +125,6 @@ report 50101 "Sales Order Report"
                 DataItemLink = "Document No." = FIELD("No.");
                 DataItemLinkReference = "Sales Header";
 
-
                 column(SrNo; SrNo)
                 {
 
@@ -188,15 +187,15 @@ report 50101 "Sales Order Report"
                     subtotal += Quantity * "Unit Price";
 
                     //Freight Amount
-                    Clear(freightAmt);
-                    //  if "Sales Line".Type = "Sales Line".Type::"G/L Account" then begin //pcpl-064 12oct2023
-                    if RecGLAccount.Get("No.") then begin
-                        if RecGLAccount.Freight = true then begin
-                            repeat
-                                freightAmt += "Sales Line".Amount;
-                            until "Sales Line".Next() = 0;
-                        end;
-                    end
+                    // Clear(freightAmt);
+                    // //  if "Sales Line".Type = "Sales Line".Type::"G/L Account" then begin //pcpl-064 12oct2023
+                    // if RecGLAccount.Get("No.") then begin
+                    //     if RecGLAccount.Freight = true then begin
+                    //         repeat
+                    //             freightAmt += "Sales Line".Amount;
+                    //         until "Sales Line".Next() = 0;
+                    //     end;
+                    // end
                 end;
 
                 //end;
@@ -244,6 +243,20 @@ report 50101 "Sales Order Report"
                          freightAmt += SL.Amount;
                      until SL.Next() = 0;
                  end; */
+
+                //PCPL-25/291123
+                Clear(freightAmt);
+                SL.Reset();
+                SL.SetRange("Document No.", "No.");
+                SL.SetRange(Type, SL.Type::"G/L Account");
+                if SL.FindSet() THEN
+                    REPEAT
+                        if RecGLAccount.Get(SL."No.") AND (RecGLAccount.Freight = true) then begin
+                            freightAmt += SL.Amount;
+                        END;
+                    until SL.Next() = 0;
+                //PCPL-25/291123
+
                 //Trade Amount
                 RecSL.Reset();
                 RecSL.SetRange("Document No.", "No.");
@@ -312,14 +325,7 @@ report 50101 "Sales Order Report"
         }
     }
 
-    /*  rendering
-     {
-         layout(LayoutName)
-         {
-             Type = RDLC;
-             LayoutFile = 'mylayout.rdl';
-         }
-     } */
+
 
     var
         myInt: Integer;
@@ -354,6 +360,7 @@ report 50101 "Sales Order Report"
         RecGLAccount: Record "G/L Account";
         salesline: Record "Sales Line";
         Comments: Text;
+
 
     //  DGLE: Record "Detailed GST Ledger Entry";
 

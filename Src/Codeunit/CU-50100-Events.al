@@ -183,7 +183,7 @@ codeunit 50100 Events
                         VarRecipient.Add(RecCustumReportSel."Send To Email");
                     end;
                 until RecCustumReportSel.Next = 0;
-                EmailMsg.Create(VarRecipient, 'Tax Invoice: ' + ' Dated ' + FORMAT(Today), '', true, VarRecipientCC, VarRecipientBCC);
+                EmailMsg.Create(VarRecipient, 'Acertara Invoice: ' + SalesInvHeader."No.", '', true, VarRecipientCC, VarRecipientBCC);
                 //*****SAVE As PDF Code*****
                 Clear(FileName);
                 Clear(Instr);
@@ -206,6 +206,7 @@ codeunit 50100 Events
                     SentmailBool := true;
                 end;
                 //**** Email Body Creation *****
+                /*
                 EmailMsg.AppendToBody('<p><font face="Georgia">Dear <B>Sir,</B></font></p>');
                 Char := 13;
                 EmailMsg.AppendToBody(FORMAT(Char));
@@ -222,6 +223,35 @@ codeunit 50100 Events
                 EmailMsg.AppendToBody(FORMAT(Char));
                 EmailMsg.AppendToBody(FORMAT(Char));
                 EmailMsg.AppendToBody(FORMAT(Char));
+                */
+                EmailMsg.AppendToBody('<p><font face="Georgia">Hello,</font></p>');
+                Char := 13;
+                EmailMsg.AppendToBody(FORMAT(Char));
+                EmailMsg.AppendToBody(FORMAT(Char));
+                EmailMsg.AppendToBody(FORMAT(Char));
+                EmailMsg.AppendToBody('<p><font face="Georgia">Thank you for your business! Please find attached a new invoice from Acertara; ' + SalesInvHeader."No." + ' is dated ' + Format(SalesInvHeader."Posting Date") + ', and is due ' + Format(SalesInvHeader."Due Date") + '.</font></p>');
+                EmailMsg.AppendToBody(FORMAT(Char));
+                EmailMsg.AppendToBody(FORMAT(Char));
+                EmailMsg.AppendToBody('<p><font face="Georgia">As a small business, we depend on our customers to pay these invoices on time. Please note that the terms and conditions of this purchase include a finance charge of 1.5% for invoices that are not paid on time.</font></p>');
+                EmailMsg.AppendToBody(FORMAT(Char));
+                EmailMsg.AppendToBody(FORMAT(Char));
+                EmailMsg.AppendToBody('<p><font face="Georgia">Now pay with a credit card online: Email accounting@acertaralabs.com to request an online CC payment invoice. American Express credit card payments will incur a 4% processing fee, and all other credit card types will incur a 3% processing fee.</font></p>');
+                EmailMsg.AppendToBody(FORMAT(Char));
+                EmailMsg.AppendToBody(FORMAT(Char));
+                EmailMsg.AppendToBody('<p><font face="Georgia">If there is anything we can do to improve our billing process to ensure on-time payment, please contact Acertara_Cares@acertaralabs.com and let us know.</font></p>');
+                EmailMsg.AppendToBody(FORMAT(Char));
+                EmailMsg.AppendToBody(FORMAT(Char));
+                EmailMsg.AppendToBody(FORMAT(Char));
+                EmailMsg.AppendToBody(FORMAT(Char));
+                EmailMsg.AppendToBody('</BR></BR><font face="Georgia">Acertara Acoustic Laboratories</font>');
+                EmailMsg.AppendToBody('</BR><font face="Georgia">Accounting Department</font>');
+                EmailMsg.AppendToBody('</BR><font face="Georgia">accounting@acertaralabs.com</font>');
+                EmailMsg.AppendToBody(FORMAT(Char));
+                EmailMsg.AppendToBody(FORMAT(Char));
+                EmailMsg.AppendToBody('</BR></BR><font face="Georgia">1950 Lefthand Creek Lane</font>');
+                EmailMsg.AppendToBody('</BR><font face="Georgia">Longmont, CO 80501</font>');
+                EmailMsg.AppendToBody('</BR><font face="Georgia">(303) 834-8413 - main</font>');
+
                 //**** Email Send Function **** 
                 if SentmailBool = true then
                     EmailObj.Send(EmailMsg, Enum::"Email Scenario"::Default);

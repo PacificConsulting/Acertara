@@ -258,5 +258,278 @@ codeunit 50100 Events
             end;
         end;
     end;
+
+    procedure sendinginvoicesShipto(SalesInvHdrNo: Code[20])
+    //procedure sendinginvoices(customer: Code[50])
+    var
+        RecShipTobillto: Record ShipTo_BillTo_Deails;
+        SendTO: Text[250];
+        SendTOMultiple: Text[250];
+        SendCC: Text[250];
+        i: Integer;
+        j: Integer;
+        EmailMsg: Codeunit "Email Message";
+        EmailObj: Codeunit Email;
+        //repcustnew: Report 60036;
+        Body: Text;
+        EOuts: OutStream;
+        EIns: InStream;
+        EmailBlob: Codeunit "Temp Blob";
+        RecipientType: Enum "Email Recipient Type";
+        VarRecipient: list of [Text];
+        VarRecipientCC: list of [Text];
+        VarRecipientBCC: list of [Text];
+        FileName: Text[250];
+        Recref: RecordRef;
+        TempBlob: Codeunit "Temp Blob";
+        OutStr: OutStream;
+        Instr: InStream;
+        SIHNEW: Record 112;
+        TaxInv: Report "Tax Invoice";
+        SentmailBool: Boolean;
+        Char: Char;
+        SalesInvHeader: Record "Sales Invoice Header";
+    begin
+        Clear(SendCC);
+        Clear(SendTO);
+        Clear(SendTOMultiple);
+        Clear(i);
+        Clear(j);
+        Clear(SentmailBool);
+        Clear(FileName);
+        Clear(Instr);
+        Clear(OutStr);
+        SalesInvHeader.Reset();
+        SalesInvHeader.SetRange("No.", SalesInvHdrNo);
+        if SalesInvHeader.FindFirst() then begin
+            if SalesInvHeader."Ship-to Code" <> '' then begin
+                VarRecipient.RemoveRange(1, VarRecipient.Count);
+                VarRecipientCC.RemoveRange(1, VarRecipientCC.Count);
+                RecShipTobillto.Reset();
+                RecShipTobillto.SetRange("Customer No.", SalesInvHeader."Sell-to Customer No.");
+                //RecCustumReportSel.SetRange("Source No.", customer);
+                RecShipTobillto.SetRange("Ship/Bill To Code", SalesInvHeader."Ship-to Code");
+                RecShipTobillto.SetFilter("E-Mail", '<>%1', '');
+                if RecShipTobillto.FindSet() then begin
+                    repeat
+                        if RecShipTobillto."Email Type" = RecShipTobillto."Email Type"::CC then begin
+                            VarRecipientCC.Add(RecShipTobillto."E-Mail");
+                        end else begin
+                            VarRecipient.Add(RecShipTobillto."E-Mail");
+                        end;
+                    until RecShipTobillto.Next = 0;
+                    EmailMsg.Create(VarRecipient, 'Acertara Invoice: ' + SalesInvHeader."No.", '', true, VarRecipientCC, VarRecipientBCC);
+                    //*****SAVE As PDF Code*****
+                    Clear(FileName);
+                    Clear(Instr);
+                    Clear(OutStr);
+                    Clear(Recref);
+                    SIHNEW.Reset();
+                    SIHNEW.SetRange("No.", SalesInvHeader."No.");
+                    IF SIHNEW.FindFirst() then begin
+                        //Message(SIHNEW."No." + SIHNEW."Store No.");
+                        Recref.GetTable(SIHNEW);
+                        Clear(TempBlob);
+                        TempBlob.CreateOutStream(OutStr);
+                        //Report.SaveAs(Report::"Tax Invoice", '', ReportFormat::Pdf, OutStr);
+                        Clear(TaxInv);
+                        TaxInv.SetTableView(SIHNEW);
+                        TaxInv.SaveAs('', ReportFormat::Pdf, OutStr);
+                        TempBlob.CreateInStream(InStr);
+                        FileName := SIHNEW."No." + '_' + FORMAT(Today) + '.pdf';
+                        EmailMsg.AddAttachment(FileName, '.pdf', InStr);
+                        SentmailBool := true;
+                    end;
+                    //**** Email Body Creation *****
+                    /*
+                    EmailMsg.AppendToBody('<p><font face="Georgia">Dear <B>Sir,</B></font></p>');
+                    Char := 13;
+                    EmailMsg.AppendToBody(FORMAT(Char));
+                    EmailMsg.AppendToBody('<p><font face="Georgia"> <B>!!!Greetings!!!</B></font></p>');
+                    EmailMsg.AppendToBody(FORMAT(Char));
+                    EmailMsg.AppendToBody(FORMAT(Char));
+                    EmailMsg.AppendToBody('<p><font face="Georgia"><BR>Please find enclosed Tax Invoice.</BR></font></p>');
+                    EmailMsg.AppendToBody(FORMAT(Char));
+                    EmailMsg.AppendToBody(FORMAT(Char));
+                    EmailMsg.AppendToBody('<p><font face="Georgia"><BR>Thanking you,</BR></font></p>');
+                    EmailMsg.AppendToBody('<p><font face="Georgia"><BR>Warm Regards,</BR></font></p>');
+                    EmailMsg.AppendToBody('<p><font face="Georgia"><BR><B>For Acertara</B></BR></font></p>');
+                    EmailMsg.AppendToBody(FORMAT(Char));
+                    EmailMsg.AppendToBody(FORMAT(Char));
+                    EmailMsg.AppendToBody(FORMAT(Char));
+                    EmailMsg.AppendToBody(FORMAT(Char));
+                    */
+                    EmailMsg.AppendToBody('<p><font face="Georgia">Hello,</font></p>');
+                    Char := 13;
+                    EmailMsg.AppendToBody(FORMAT(Char));
+                    EmailMsg.AppendToBody(FORMAT(Char));
+                    EmailMsg.AppendToBody(FORMAT(Char));
+                    EmailMsg.AppendToBody('<p><font face="Georgia">Thank you for your business! Please find attached a new invoice from Acertara; ' + SalesInvHeader."No." + ' is dated ' + Format(SalesInvHeader."Posting Date") + ', and is due ' + Format(SalesInvHeader."Due Date") + '.</font></p>');
+                    EmailMsg.AppendToBody(FORMAT(Char));
+                    EmailMsg.AppendToBody(FORMAT(Char));
+                    EmailMsg.AppendToBody('<p><font face="Georgia">As a small business, we depend on our customers to pay these invoices on time. Please note that the terms and conditions of this purchase include a finance charge of 1.5% for invoices that are not paid on time.</font></p>');
+                    EmailMsg.AppendToBody(FORMAT(Char));
+                    EmailMsg.AppendToBody(FORMAT(Char));
+                    EmailMsg.AppendToBody('<p><font face="Georgia">Now pay with a credit card online: Email accounting@acertaralabs.com to request an online CC payment invoice. American Express credit card payments will incur a 4% processing fee, and all other credit card types will incur a 3% processing fee.</font></p>');
+                    EmailMsg.AppendToBody(FORMAT(Char));
+                    EmailMsg.AppendToBody(FORMAT(Char));
+                    EmailMsg.AppendToBody('<p><font face="Georgia">If there is anything we can do to improve our billing process to ensure on-time payment, please contact Acertara_Cares@acertaralabs.com and let us know.</font></p>');
+                    EmailMsg.AppendToBody(FORMAT(Char));
+                    EmailMsg.AppendToBody(FORMAT(Char));
+                    EmailMsg.AppendToBody(FORMAT(Char));
+                    EmailMsg.AppendToBody(FORMAT(Char));
+                    EmailMsg.AppendToBody('</BR></BR><font face="Georgia">Acertara Acoustic Laboratories</font>');
+                    EmailMsg.AppendToBody('</BR><font face="Georgia">Accounting Department</font>');
+                    EmailMsg.AppendToBody('</BR><font face="Georgia">accounting@acertaralabs.com</font>');
+                    EmailMsg.AppendToBody(FORMAT(Char));
+                    EmailMsg.AppendToBody(FORMAT(Char));
+                    EmailMsg.AppendToBody('</BR></BR><font face="Georgia">1950 Lefthand Creek Lane</font>');
+                    EmailMsg.AppendToBody('</BR><font face="Georgia">Longmont, CO 80501</font>');
+                    EmailMsg.AppendToBody('</BR><font face="Georgia">(303) 834-8413 - main</font>');
+
+                    //**** Email Send Function **** 
+                    if SentmailBool = true then
+                        EmailObj.Send(EmailMsg, Enum::"Email Scenario"::Default);
+                end;
+            end;
+        end;
+    end;
+
+    procedure sendinginvoicesBillto(SalesInvHdrNo: Code[20])
+    //procedure sendinginvoices(customer: Code[50])
+    var
+        RecShipTobillto: Record ShipTo_BillTo_Deails;
+        SendTO: Text[250];
+        SendTOMultiple: Text[250];
+        SendCC: Text[250];
+        i: Integer;
+        j: Integer;
+        EmailMsg: Codeunit "Email Message";
+        EmailObj: Codeunit Email;
+        //repcustnew: Report 60036;
+        Body: Text;
+        EOuts: OutStream;
+        EIns: InStream;
+        EmailBlob: Codeunit "Temp Blob";
+        RecipientType: Enum "Email Recipient Type";
+        VarRecipient: list of [Text];
+        VarRecipientCC: list of [Text];
+        VarRecipientBCC: list of [Text];
+        FileName: Text[250];
+        Recref: RecordRef;
+        TempBlob: Codeunit "Temp Blob";
+        OutStr: OutStream;
+        Instr: InStream;
+        SIHNEW: Record 112;
+        TaxInv: Report "Tax Invoice";
+        SentmailBool: Boolean;
+        Char: Char;
+        SalesInvHeader: Record "Sales Invoice Header";
+    begin
+        Clear(SendCC);
+        Clear(SendTO);
+        Clear(SendTOMultiple);
+        Clear(i);
+        Clear(j);
+        Clear(SentmailBool);
+        Clear(FileName);
+        Clear(Instr);
+        Clear(OutStr);
+        SalesInvHeader.Reset();
+        SalesInvHeader.SetRange("No.", SalesInvHdrNo);
+        if SalesInvHeader.FindFirst() then begin
+            if SalesInvHeader."Bill-to Code" <> '' then begin
+                VarRecipient.RemoveRange(1, VarRecipient.Count);
+                VarRecipientCC.RemoveRange(1, VarRecipientCC.Count);
+                RecShipTobillto.Reset();
+                RecShipTobillto.SetRange("Customer No.", SalesInvHeader."Sell-to Customer No.");
+                //RecCustumReportSel.SetRange("Source No.", customer);
+                RecShipTobillto.SetRange("Ship/Bill To Code", SalesInvHeader."Bill-to Code");
+                RecShipTobillto.SetFilter("E-Mail", '<>%1', '');
+                if RecShipTobillto.FindSet() then begin
+                    repeat
+                        if RecShipTobillto."Email Type" = RecShipTobillto."Email Type"::CC then begin
+                            VarRecipientCC.Add(RecShipTobillto."E-Mail");
+                        end else begin
+                            VarRecipient.Add(RecShipTobillto."E-Mail");
+                        end;
+                    until RecShipTobillto.Next = 0;
+                    EmailMsg.Create(VarRecipient, 'Acertara Invoice: ' + SalesInvHeader."No.", '', true, VarRecipientCC, VarRecipientBCC);
+                    //*****SAVE As PDF Code*****
+                    Clear(FileName);
+                    Clear(Instr);
+                    Clear(OutStr);
+                    Clear(Recref);
+                    SIHNEW.Reset();
+                    SIHNEW.SetRange("No.", SalesInvHeader."No.");
+                    IF SIHNEW.FindFirst() then begin
+                        //Message(SIHNEW."No." + SIHNEW."Store No.");
+                        Recref.GetTable(SIHNEW);
+                        Clear(TempBlob);
+                        TempBlob.CreateOutStream(OutStr);
+                        //Report.SaveAs(Report::"Tax Invoice", '', ReportFormat::Pdf, OutStr);
+                        Clear(TaxInv);
+                        TaxInv.SetTableView(SIHNEW);
+                        TaxInv.SaveAs('', ReportFormat::Pdf, OutStr);
+                        TempBlob.CreateInStream(InStr);
+                        FileName := SIHNEW."No." + '_' + FORMAT(Today) + '.pdf';
+                        EmailMsg.AddAttachment(FileName, '.pdf', InStr);
+                        SentmailBool := true;
+                    end;
+                    //**** Email Body Creation *****
+                    /*
+                    EmailMsg.AppendToBody('<p><font face="Georgia">Dear <B>Sir,</B></font></p>');
+                    Char := 13;
+                    EmailMsg.AppendToBody(FORMAT(Char));
+                    EmailMsg.AppendToBody('<p><font face="Georgia"> <B>!!!Greetings!!!</B></font></p>');
+                    EmailMsg.AppendToBody(FORMAT(Char));
+                    EmailMsg.AppendToBody(FORMAT(Char));
+                    EmailMsg.AppendToBody('<p><font face="Georgia"><BR>Please find enclosed Tax Invoice.</BR></font></p>');
+                    EmailMsg.AppendToBody(FORMAT(Char));
+                    EmailMsg.AppendToBody(FORMAT(Char));
+                    EmailMsg.AppendToBody('<p><font face="Georgia"><BR>Thanking you,</BR></font></p>');
+                    EmailMsg.AppendToBody('<p><font face="Georgia"><BR>Warm Regards,</BR></font></p>');
+                    EmailMsg.AppendToBody('<p><font face="Georgia"><BR><B>For Acertara</B></BR></font></p>');
+                    EmailMsg.AppendToBody(FORMAT(Char));
+                    EmailMsg.AppendToBody(FORMAT(Char));
+                    EmailMsg.AppendToBody(FORMAT(Char));
+                    EmailMsg.AppendToBody(FORMAT(Char));
+                    */
+                    EmailMsg.AppendToBody('<p><font face="Georgia">Hello,</font></p>');
+                    Char := 13;
+                    EmailMsg.AppendToBody(FORMAT(Char));
+                    EmailMsg.AppendToBody(FORMAT(Char));
+                    EmailMsg.AppendToBody(FORMAT(Char));
+                    EmailMsg.AppendToBody('<p><font face="Georgia">Thank you for your business! Please find attached a new invoice from Acertara; ' + SalesInvHeader."No." + ' is dated ' + Format(SalesInvHeader."Posting Date") + ', and is due ' + Format(SalesInvHeader."Due Date") + '.</font></p>');
+                    EmailMsg.AppendToBody(FORMAT(Char));
+                    EmailMsg.AppendToBody(FORMAT(Char));
+                    EmailMsg.AppendToBody('<p><font face="Georgia">As a small business, we depend on our customers to pay these invoices on time. Please note that the terms and conditions of this purchase include a finance charge of 1.5% for invoices that are not paid on time.</font></p>');
+                    EmailMsg.AppendToBody(FORMAT(Char));
+                    EmailMsg.AppendToBody(FORMAT(Char));
+                    EmailMsg.AppendToBody('<p><font face="Georgia">Now pay with a credit card online: Email accounting@acertaralabs.com to request an online CC payment invoice. American Express credit card payments will incur a 4% processing fee, and all other credit card types will incur a 3% processing fee.</font></p>');
+                    EmailMsg.AppendToBody(FORMAT(Char));
+                    EmailMsg.AppendToBody(FORMAT(Char));
+                    EmailMsg.AppendToBody('<p><font face="Georgia">If there is anything we can do to improve our billing process to ensure on-time payment, please contact Acertara_Cares@acertaralabs.com and let us know.</font></p>');
+                    EmailMsg.AppendToBody(FORMAT(Char));
+                    EmailMsg.AppendToBody(FORMAT(Char));
+                    EmailMsg.AppendToBody(FORMAT(Char));
+                    EmailMsg.AppendToBody(FORMAT(Char));
+                    EmailMsg.AppendToBody('</BR></BR><font face="Georgia">Acertara Acoustic Laboratories</font>');
+                    EmailMsg.AppendToBody('</BR><font face="Georgia">Accounting Department</font>');
+                    EmailMsg.AppendToBody('</BR><font face="Georgia">accounting@acertaralabs.com</font>');
+                    EmailMsg.AppendToBody(FORMAT(Char));
+                    EmailMsg.AppendToBody(FORMAT(Char));
+                    EmailMsg.AppendToBody('</BR></BR><font face="Georgia">1950 Lefthand Creek Lane</font>');
+                    EmailMsg.AppendToBody('</BR><font face="Georgia">Longmont, CO 80501</font>');
+                    EmailMsg.AppendToBody('</BR><font face="Georgia">(303) 834-8413 - main</font>');
+
+                    //**** Email Send Function **** 
+                    if SentmailBool = true then
+                        EmailObj.Send(EmailMsg, Enum::"Email Scenario"::Default);
+                end;
+            end;
+        end;
+    end;
+
     //Azhar sending mail after invoiceing--
 }

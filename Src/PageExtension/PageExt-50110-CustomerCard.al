@@ -9,6 +9,14 @@ pageextension 50110 CustomerCard extends "Customer Card"
             {
                 ApplicationArea = all;
             }
+            field("Global Dimension 1 Code"; Rec."Global Dimension 1 Code")
+            {
+                ApplicationArea = all;
+            }
+            field("Global Dimension 2 Code"; Rec."Global Dimension 2 Code")
+            {
+                ApplicationArea = all;
+            }
         }
     }
 

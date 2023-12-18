@@ -176,17 +176,27 @@ report 50102 "Tax Invoice"
 
                     //Freight Amount
                     Clear(freightAmt);
-                    //  if "Sales Line".Type = "Sales Line".Type::"G/L Account" then begin //pcpl-064 12oct2023
-                    if RecGLAccount.Get("No.") then begin
-                        if RecGLAccount.Freight = true then begin
-                            repeat
-                                freightAmt += "Sales Invoice Line".Amount;
-                            until "Sales Invoice Line".Next() = 0;
+                    if "Sales Invoice Line".Type = "Sales Invoice Line".Type::"G/L Account" then begin //pcpl-064 12oct2023
+                        if RecGLAccount.Get("No.") then begin
+                            if RecGLAccount.Freight = true then begin
+                                repeat
+                                    freightAmt += "Sales Invoice Line".Amount;
+                                until "Sales Invoice Line".Next() = 0;
+                            end;
                         end;
-                    end
-                end;
+                        /* Clear(freightAmt);
+                        SIL1.Reset();
+                        SIL1.SetRange("Document No.", "No.");
+                        SIL1.SetRange(Type, SIL1.Type::"G/L Account");
+                        if SIL1.FindSet() THEN
+                            REPEAT
+                                if RecGLAccount.Get(SIL1."No.") AND (RecGLAccount.Freight = true) then begin
+                                    freightAmt += SIL1.Amount;
+                                END;
+                            until SIL1.Next() = 0; */
+                    end;
 
-                //end;
+                end;
 
 
 
@@ -336,5 +346,6 @@ report 50102 "Tax Invoice"
         RecGLAccount: Record "G/L Account";
         RSIL: Record "Sales Invoice Line";
         Comments: Text;
+        SIL1: Record "Sales Invoice Line";
     //  DGLE: Record "Detailed GST Ledger Entry";
 }

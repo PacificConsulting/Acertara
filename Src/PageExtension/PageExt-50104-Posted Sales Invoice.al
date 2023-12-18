@@ -39,7 +39,9 @@ pageextension 50104 Posted_Sales_Inv_Ext extends "Posted Sales Invoice"
                 var
                     CUEvent: Codeunit Events;
                 begin
-                    CUEvent.sendinginvoices(Rec."No.");
+                    //CUEvent.sendinginvoices(Rec."No.");
+                    CUEvent.sendinginvoicesShipto(Rec."No.");
+                    CUEvent.sendinginvoicesBillto(Rec."No.");
                 end;
             }
         }

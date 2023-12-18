@@ -55,7 +55,7 @@ pageextension 50115 Sales_Invoice_Ext extends "Sales Invoice"
                     SH.Reset();
                     SH.SetRange("No.", Rec."No.");
                     if SH.FindFirst() then
-                        Report.RunModal(50101, true, true, SH);
+                        Report.RunModal(50105, true, true, SH);
                 end;
             }
             action("Packing Slip")

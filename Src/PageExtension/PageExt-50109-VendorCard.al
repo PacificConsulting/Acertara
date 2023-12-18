@@ -18,6 +18,17 @@ pageextension 50109 VendorCard extends "Vendor Card"
                 ApplicationArea = ALL;
             }
         }
+        addafter("Our Customer A/C No.")
+        {
+            field("Global Dimension 1 Code"; Rec."Global Dimension 1 Code")
+            {
+                ApplicationArea = all;
+            }
+            field("Global Dimension 2 Code"; Rec."Global Dimension 2 Code")
+            {
+                ApplicationArea = all;
+            }
+        }
     }
 
     // actions

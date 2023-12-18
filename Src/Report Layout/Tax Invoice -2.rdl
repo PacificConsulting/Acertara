@@ -1848,7 +1848,7 @@
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=(SUM(Fields!Unit_Price.Value * Fields!Quantity.Value)+Fields!TradeDisAmt.Value)-Fields!freightAmt.Value</Value>
+                                  <Value>=(SUM(Fields!Unit_Price.Value * Fields!Quantity.Value)-Fields!TradeDisAmt.Value)+Fields!freightAmt.Value</Value>
                                   <Style>
                                     <FontSize>9pt</FontSize>
                                     <Format>'$'0.00;('$'0.00)</Format>

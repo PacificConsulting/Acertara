@@ -2,7 +2,7 @@ report 50100 "Purchase order Report"
 {
     UsageCategory = ReportsAndAnalysis;
     ApplicationArea = All;
-    RDLCLayout = 'src/report layout/PurchaseOrder.rdl';
+    RDLCLayout = 'src/report layout/PurchaseOrder -2.rdl';
     DefaultLayout = RDLC;
 
 
@@ -20,7 +20,11 @@ report 50100 "Purchase order Report"
             {
 
             }
-            column(Companyinfo3; Companyinfo.Address + ' ' + Companyinfo."Address 2" + ' ' + Companyinfo.City + ' ' + Companyinfo."Post Code")
+            column(Companyinfo3; Companyinfo.Address)
+            {
+
+            }
+            column(Companyinfo4; Companyinfo."Address 2" + '' + Companyinfo.City + ', ' + PState + ' ' + Companyinfo."Post Code" + ' ' + Companyinfo."Country/Region Code")
             {
 
             }
@@ -40,7 +44,7 @@ report 50100 "Purchase order Report"
             {
 
             }
-            column(Buy_from_City; "Buy-from City")
+            column(Buy_from_City; "Buy-from City" + ', ' + "Buy-from County" + ' ' + "Buy-from Post Code" + ' ' + "Buy-from Country/Region Code")
             {
 
             }
@@ -48,6 +52,20 @@ report 50100 "Purchase order Report"
             {
 
             }
+            column(Buy_from_Country_Region_Code; "Buy-from Country/Region Code")
+            {
+
+            }
+            column(Buy_from_County; "Buy-from County")
+            {
+
+            }
+            column(Buy_from_Vendor_Name; "Buy-from Vendor Name")
+            {
+
+            }
+
+
             column(Payment_Terms_Code; "Payment Terms Code")
             {
 
@@ -76,11 +94,15 @@ report 50100 "Purchase order Report"
             {
 
             }
-            column(Locationcity; Locationcity)
+            column(Locationcity; Locationcity + ', ' + Recloc.County + ' ' + Recloc."Post Code" + ' ' + Recloc."Country/Region Code")
             {
 
             }
             column(Locationpostcode; Locationpostcode)
+            {
+
+            }
+            column(LOcationCountry; LOcationCountry)
             {
 
             }
@@ -96,7 +118,11 @@ report 50100 "Purchase order Report"
             {
 
             }
-            column(Product_Verification_Sign; RecUserSetup1.Signature)
+            column(Product_Verification_Sign; RecUserSetup_2.Signature) //pcpl-064 28dec2023
+            {
+
+            }
+            column(Product_Verification_Date; "Product Verification Date")
             {
 
             }
@@ -113,6 +139,7 @@ report 50100 "Purchase order Report"
             {
 
             }
+
 
             dataitem("Purchase Line"; "Purchase Line")
             {
@@ -249,7 +276,6 @@ report 50100 "Purchase order Report"
 
             begin
 
-
                 Clear(Locationaddr);
                 Clear(Locationpostcode);
                 Recloc.Reset();
@@ -259,6 +285,11 @@ report 50100 "Purchase order Report"
                     Locationaddr2 := Recloc."Address 2";
                     Locationcity := Recloc.City;
                     Locationpostcode := Recloc."Post Code";
+                    LOcationCountry := Recloc."Country/Region Code";
+                    locstate := Recloc.County;
+
+
+
 
                 end;
 
@@ -270,6 +301,14 @@ report 50100 "Purchase order Report"
 
                 if RecVdedor.Get("Purchase Header"."Buy-from Vendor No.") then;
 
+                if compinfo.get() then
+                    recpostcode.Reset();
+                recpostcode.SetRange(Code, compinfo."Post Code");
+                if recpostcode.FindFirst() then begin
+                    PState := recpostcode.County;
+                end;
+                /*  if compinfo.get() then
+                     if recpostcode.Get(compinfo."Post Code") then */
 
 
                 ////Authorized Signature 22/9/23
@@ -278,7 +317,8 @@ report 50100 "Purchase order Report"
                 RecApprovalEntries.SetRange("Document Type", RecApprovalEntries."Document Type"::Order);
                 RecApprovalEntries.SetRange("Document No.", "No.");
                 RecApprovalEntries.SetRange(Status, RecApprovalEntries.Status::Approved);
-                if RecApprovalEntries.FindFirst() then begin
+                RecApprovalEntries.SetRange("Sequence No.", 1);
+                if RecApprovalEntries.FindLast() then begin
                     RecUserSetup.Reset();
                     RecUserSetup.SetRange("User ID", RecApprovalEntries."Sender ID");
                     if RecUserSetup.FindFirst() then begin
@@ -290,17 +330,24 @@ report 50100 "Purchase order Report"
 
 
                 //Product Verification Signature 22/9/23
-                RecApprovalEntries1.Reset();
-                RecApprovalEntries1.SetRange("Table ID", 38);
-                RecApprovalEntries1.SetRange("Document Type", RecApprovalEntries1."Document Type"::Order);
-                RecApprovalEntries1.SetRange("Document No.", "No.");
-                RecApprovalEntries1.SetRange(Status, RecApprovalEntries1.Status::Approved);
-                if RecApprovalEntries1.FindLast() then begin
-                    if RecApprovalEntries1."Sender ID" <> RecApprovalEntries1."Approver ID" then begin
-                        RecUserSetup1.Get(RecApprovalEntries1."Approver ID");
-                        RecUserSetup1.CalcFields(Signature);
-                    end;
+                /*  RecApprovalEntries1.Reset();
+                 RecApprovalEntries1.SetRange("Table ID", 38);
+                 RecApprovalEntries1.SetRange("Document Type", RecApprovalEntries1."Document Type"::Order);
+                 RecApprovalEntries1.SetRange("Document No.", "No.");
+                 RecApprovalEntries1.SetRange(Status, RecApprovalEntries1.Status::Approved);
+                 if RecApprovalEntries1.FindLast() then begin
+                     if RecApprovalEntries1."Sender ID" <> RecApprovalEntries1."Approver ID" then begin
+                         RecUserSetup1.Get(RecApprovalEntries1."Approver ID");
+                         RecUserSetup1.CalcFields(Signature);
+                     end;
 
+                 end; */
+
+                // New  code for Production verification signature //pcpl-064 28dec2023
+                RecUserSetup_2.Reset();
+                RecUserSetup_2.SetRange("User ID", "Product Verification ID");
+                if RecUserSetup_2.FindFirst() then begin
+                    RecUserSetup_2.CalcFields(Signature)
                 end;
 
 
@@ -378,6 +425,7 @@ report 50100 "Purchase order Report"
 
 
     var
+        compinfo: record "Company Information";
         Companyinfo: Record "Company Information";
         Recloc: record "Location";
         PH: Record "Purchase Header";
@@ -410,9 +458,11 @@ report 50100 "Purchase order Report"
         Recpurchline: Record "Purchase Line";
         Locationaddr2: Text[100];
         Locationcity: Text[100];
-
-
-
+        LOcationCountry: Code[20];
+        RecUserSetup_2: Record "User Setup";
+        recpostcode: Record "Post Code";
+        PState: Text[30];
+        locstate: Text[50];
 
     // TotalAmount: Decimal;
     // CGSTAmount: Decimal;

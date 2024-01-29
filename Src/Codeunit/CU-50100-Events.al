@@ -235,7 +235,7 @@ codeunit 50100 Events
                 EmailMsg.AppendToBody('<p><font face="Georgia">As a small business, we depend on our customers to pay these invoices on time. Please note that the terms and conditions of this purchase include a finance charge of 1.5% for invoices that are not paid on time.</font></p>');
                 EmailMsg.AppendToBody(FORMAT(Char));
                 EmailMsg.AppendToBody(FORMAT(Char));
-                EmailMsg.AppendToBody('<p><font face="Georgia">Now pay with a credit card online: Email accounting@acertaralabs.com to request an online CC payment invoice. American Express credit card payments will incur a 4% processing fee, and all other credit card types will incur a 3% processing fee.</font></p>');
+                EmailMsg.AppendToBody('<p><font face="Georgia">Now pay with a credit card online: Email accounting@acertaralabs.com to request an online CC payment invoice. Credit card payments will incur a 3% processing fee.</font></p>');
                 EmailMsg.AppendToBody(FORMAT(Char));
                 EmailMsg.AppendToBody(FORMAT(Char));
                 EmailMsg.AppendToBody('<p><font face="Georgia">If there is anything we can do to improve our billing process to ensure on-time payment, please contact Acertara_Cares@acertaralabs.com and let us know.</font></p>');
@@ -370,7 +370,8 @@ codeunit 50100 Events
                     EmailMsg.AppendToBody('<p><font face="Georgia">As a small business, we depend on our customers to pay these invoices on time. Please note that the terms and conditions of this purchase include a finance charge of 1.5% for invoices that are not paid on time.</font></p>');
                     EmailMsg.AppendToBody(FORMAT(Char));
                     EmailMsg.AppendToBody(FORMAT(Char));
-                    EmailMsg.AppendToBody('<p><font face="Georgia">Now pay with a credit card online: Email accounting@acertaralabs.com to request an online CC payment invoice. American Express credit card payments will incur a 4% processing fee, and all other credit card types will incur a 3% processing fee.</font></p>');
+                    /// EmailMsg.AppendToBody('<p><font face="Georgia">Now pay with a credit card online: Email accounting@acertaralabs.com to request an online CC payment invoice. American Express credit card payments will incur a 4% processing fee, and all other credit card types will incur a 3% processing fee.</font></p>');
+                    EmailMsg.AppendToBody('<p><font face="Georgia">Now pay with a credit card online: Email accounting@acertaralabs.com to request an online CC payment invoice. Credit card payments will incur a 3% processing fee.</font></p>');
                     EmailMsg.AppendToBody(FORMAT(Char));
                     EmailMsg.AppendToBody(FORMAT(Char));
                     EmailMsg.AppendToBody('<p><font face="Georgia">If there is anything we can do to improve our billing process to ensure on-time payment, please contact Acertara_Cares@acertaralabs.com and let us know.</font></p>');

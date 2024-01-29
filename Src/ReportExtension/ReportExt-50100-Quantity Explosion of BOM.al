@@ -31,10 +31,16 @@ reportextension 50100 QuantityExplosionofBOMExt extends "Quantity Explosion of B
                         RecProdBOMCommentLine.Reset();
                         RecProdBOMCommentLine.SetRange("Production BOM No.", BomComponent[Level]."Production BOM No.");
                         RecProdBOMCommentLine.SetRange("BOM Line No.", RecProductionBOMLine."Line No.");
-                     
+
                         if RecProdBOMCommentLine.FindSet() then
-                            Comments := RecProdBOMCommentLine.Comment;
-                       
+                            repeat
+                                IF Comments = '' then
+                                    Comments := RecProdBOMCommentLine.Comment
+                                else begin
+                                    Comments := Comments + ', ' + RecProdBOMCommentLine.Comment;
+                                end;
+                            until RecProdBOMCommentLine.Next() = 0;
+
                     end;
 
                 end;

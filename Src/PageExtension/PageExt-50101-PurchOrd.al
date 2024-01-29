@@ -10,6 +10,17 @@ pageextension 50101 PurchOrd extends "Purchase Order"
                 ApplicationArea = all;
             }
         }
+        addafter("Posting Date")
+        {
+            field("Product Verfication ID"; Rec."Product Verification ID")
+            {
+                ApplicationArea = all;
+            }
+            field("Product Verification Date"; Rec."Product Verification Date")
+            {
+                ApplicationArea = all;
+            }
+        }
     }
 
     actions
@@ -79,6 +90,40 @@ pageextension 50101 PurchOrd extends "Purchase Order"
             }
 
         }
+        addafter("O&rder")
+        {
+            action("Product Verification")
+            {
+                ApplicationArea = all;
+                Promoted = true;
+                PromotedCategory = Process;
+                PromotedIsBig = true;
+                Image = Log;
+                trigger OnAction()
+                var
+                    RecPL: Record "Purchase Line";
+                begin
+
+                    RecPL.Reset();
+                    RecPL.SetRange("Document No.", Rec."No.");
+                    RecPL.SetFilter("Quantity Received", '<>%1', 0);
+                    if RecPL.FindSet() then begin
+                        //repeat
+                        //if RecPL."Quantity Received" <> 0 then begin
+
+                        //until RecPL.Next() = 0;
+
+                        //rec."Product Verification Date" := ;
+                        rec.Validate("Product Verification ID", UserId);
+                        rec.Validate("Product Verification Date", DT2Date(CurrentDateTime));
+                        Message('Sucessfully Updated');
+                    end
+                    else begin
+                        Message('There is no value in Quantity Received');
+                    end;
+                end;
+            }
+        }
         addafter("&Print")
         {
             action("Purchase Order")
@@ -100,6 +145,7 @@ pageextension 50101 PurchOrd extends "Purchase Order"
                     //PBTL-AM 061218                
                 end;
             }
+
 
             /*action("Send E-mail")
             {
@@ -176,5 +222,6 @@ pageextension 50101 PurchOrd extends "Purchase Order"
     var
         myInt: Integer;
         ArchiveManagement: Codeunit ArchiveManagement;
+        qtyrecievedfound: Boolean;
 
 }

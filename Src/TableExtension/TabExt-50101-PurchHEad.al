@@ -12,6 +12,16 @@ tableextension 50101 purchHeader extends "Purchase Header"
         {
             DataClassification = ToBeClassified;
         }
+        field(50102; "Product Verification ID"; Code[50])
+        {
+            DataClassification = ToBeClassified;
+            Description = 'PCPL-064 28dec2023';
+        }
+        field(50103; "Product Verification Date"; Date)
+        {
+            DataClassification = ToBeClassified;
+            Description = 'PCPL-064 28dec2023';
+        }
     }
     var
         myInt: Integer;

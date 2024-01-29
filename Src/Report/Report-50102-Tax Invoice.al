@@ -2,7 +2,7 @@ report 50102 "Tax Invoice"
 {
     UsageCategory = ReportsAndAnalysis;
     ApplicationArea = All;
-    RDLCLayout = 'src/report layout/Tax Invoice -2.rdl';
+    RDLCLayout = 'src/report layout/Tax Invoice -5.rdl';
     DefaultLayout = RDLC;
 
     dataset
@@ -28,8 +28,16 @@ report 50102 "Tax Invoice"
             {
 
             }
-            column(CompAddress; Compinfo.Address + ' ' + Compinfo."Address 2" + ' ' + Compinfo.City + ' ' + Compinfo."Post Code" + ' ' + Compinfo."Country/Region Code")
+            column(CompAddress; Compinfo.Address + ' ' + Compinfo."Address 2" + ' ' + Compinfo.City + ', ' + PState + ' ' + Compinfo."Post Code" + ' ' + Compinfo."Country/Region Code")
             {
+            }
+            column(Compinfo_email; 'Email :' + Compinfo."E-Mail")
+            {
+
+            }
+            column(Compinfo_phone; 'Phone :' + Compinfo."Phone No.")
+            {
+
             }
             column(Due_Date; "Due Date")
             {
@@ -55,6 +63,10 @@ report 50102 "Tax Invoice"
             {
 
             }
+            column(billcity; billcity)
+            {
+
+            }
             column(Sell_to_Customer_No_; "Sell-to Customer No.")
             {
 
@@ -72,6 +84,10 @@ report 50102 "Tax Invoice"
 
             }
             column(ShiptoAdd; ShiptoAdd)
+            {
+
+            }
+            column(Shiptocity; Shiptocity)
             {
 
             }
@@ -111,11 +127,21 @@ report 50102 "Tax Invoice"
             {
 
             }
+            column(recpostcode; recpostcode.County)
+            {
+
+            }
+            column(Salesperson_Code; "Salesperson Code")
+            {
+
+            }
+
 
             dataitem("Sales Invoice Line"; "Sales Invoice Line")
             {
                 DataItemLink = "Document No." = FIELD("No.");
                 DataItemLinkReference = "Sales Invoice Header";
+
 
                 column(SrNo; SrNo)
                 {
@@ -157,8 +183,15 @@ report 50102 "Tax Invoice"
                 {
 
                 }
-                trigger OnAfterGetRecord() //SIL
+                column(SerialCaption; SerialCaption)
+                {
 
+                }
+                column(SrNo1; SrNo1) //serial no.
+                {
+
+                }
+                trigger OnAfterGetRecord() //SIL
                 begin
                     //skip those lines where type gl account and freight is true
                     if "Sales Invoice Line".Type = "Sales Invoice Line".Type::"G/L Account" then begin //pcpl-064 13oct2023
@@ -195,10 +228,43 @@ report 50102 "Tax Invoice"
                                 END;
                             until SIL1.Next() = 0; */
                     end;
+                    Clear(SerialCaption);
+                    if "Sales Invoice Line".Type = "Sales Invoice Line".Type::Item then begin
+                        VE.Reset();
+                        VE.SetRange("Document No.", "Sales Invoice Line"."Document No.");
+                        VE.SetRange("Document Line No.", "Sales Invoice Line"."Line No.");
+                        IF VE.FindFirst() then begin
+                            ILE.Reset();
+                            ILE.SetRange("Entry No.", VE."Item Ledger Entry No.");
+                            ILE.SetFilter("Serial No.", '<>%1', '');
+                            if ILE.FindFirst() then
+                                SerialCaption := 'Serial No.:'
+                            else
+                                SerialCaption := '';
+                        end;
+                    end;
+
+                    Clear(SrNo1);
+                    if "Sales Invoice Line".Type = "Sales Invoice Line".Type::Item then begin
+                        VE.Reset();
+                        VE.SetRange("Document No.", "Sales Invoice Line"."Document No.");
+                        VE.SetRange("Document Line No.", "Sales Invoice Line"."Line No.");
+                        IF VE.FindSet() then begin
+                            repeat
+                                ILE.Reset();
+                                ILE.SetRange("Entry No.", VE."Item Ledger Entry No.");
+                                ILE.SetFilter("Serial No.", '<>%1', '');
+                                if ILE.FindFirst() then
+                                    SrNo1 += ILE."Serial No." + ',';
+                            until ILE.Next() = 0;
+                            IF SrNo1 <> '' then
+                                SrNo1 := DelStr(SrNo1, StrLen(SrNo1), 1);
+                            //end;
+                        end;
+
+                    end;
 
                 end;
-
-
 
 
             }
@@ -206,6 +272,14 @@ report 50102 "Tax Invoice"
             var
                 myInt: Integer;
             begin
+                if recominfo.get() then
+                    recpostcode.Reset();
+                recpostcode.SetRange(Code, compinfo."Post Code");
+                if recpostcode.FindFirst() then begin
+                    PState := recpostcode.County;
+                end;
+
+
                 subtotal += "Sales Invoice Line"."Unit Price" * "Sales Invoice Line".Quantity;
                 if Shipping.Get("Shipment Method Code") then;
                 if pay.Get("Payment Terms Code") then;
@@ -215,24 +289,31 @@ report 50102 "Tax Invoice"
                   PhoneNo := RecCust."Phone No.";
                   CustGSTIN := RecCust."GST Registration No.";
    */
+                if recpostcode.Get(CompInfo."Post Code") then;
+
                 if "Bill-to Code" <> '' then begin
                     Billtoname := "Bill-to Name";
-                    BilltoAdd := "Bill-to Address" + ' ' + "Bill-to Address 2" + ' ' + "Bill-to City" + ',' + "Bill-to Post Code" + ',' + "Bill-to Country/Region Code";
+                    BilltoAdd := "Bill-to Address" + ' ' + "Bill-to Address 2";
+                    billcity := "Bill-to City" + ', ' + "Bill-to County" + ' ' + "Bill-to Post Code" + ' ' + "Bill-to Country/Region Code";
                 end
                 else begin
                     Billtoname := "Sell-to Customer Name";
-                    BilltoAdd := "Sell-to Address" + ' ' + "Sell-to Address 2" + ' ' + "Sell-to City" + ',' + "Sell-to Post Code" + ',' + "Sell-to Country/Region Code";
+                    BilltoAdd := "Sell-to Address" + ' ' + "Sell-to Address 2";
+                    billcity := "Sell-to City" + ', ' + "Sell-to County" + ' ' + "Sell-to Post Code" + ' ' + "Sell-to Country/Region Code";
+
                 end;
 
                 IF "Ship-to Code" <> '' then begin
                     ShiptoName := "Ship-to Name";
-                    ShiptoAdd := "Ship-to Address" + '' + "Ship-to Address 2" + ' ' + "Ship-to City" + ',' + "Ship-to Post Code" + ',' + "Ship-to Country/Region Code";
+                    ShiptoAdd := "Ship-to Address" + ' ' + "Ship-to Address 2";
+                    Shiptocity := "Ship-to City" + ', ' + "Ship-to County" + ' ' + "Ship-to Post Code" + ' ' + "Ship-to Country/Region Code";
+
                 end
                 ELSE begin
                     ShiptoName := Billtoname;
                     ShiptoAdd := BilltoAdd;
+                    Shiptocity := billcity;
                 end;
-
 
                 Clear(freightAmt);
                 SIL.Reset();
@@ -316,13 +397,15 @@ report 50102 "Tax Invoice"
 
     var
         myInt: Integer;
+        recominfo: Record "Company Information";
+        billcity: text[30];
         pay: Record "Payment Terms";
         Shipping: record "Shipment Method";
         Compinfo: record "Company Information";
         SrNo: Integer;
         ShiptoAdd: Text[100];
         ShiptoName: Text[50];
-        Shiptocity: Text[20];
+        Shiptocity: Text[30];
         ShiptoGSTIN: Code[20];
         RecCust: Record Customer;
         Mail: Text[80];
@@ -347,5 +430,11 @@ report 50102 "Tax Invoice"
         RSIL: Record "Sales Invoice Line";
         Comments: Text;
         SIL1: Record "Sales Invoice Line";
-    //  DGLE: Record "Detailed GST Ledger Entry";
+        ILE: Record "Item Ledger Entry";
+        SrNo1: Text;
+        VE: Record "Value Entry";
+        SerialCaption: Text;
+        recpostcode: Record "Post Code";
+        //  DGLE: Record "Detailed GST Ledger Entry";
+        PState: Text[30];
 }

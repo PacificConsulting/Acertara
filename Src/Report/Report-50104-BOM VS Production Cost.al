@@ -32,7 +32,7 @@ report 50104 "BOM Vs Production Cost"
                 {
                     DataItemLink = "Prod. Order No." = field("Prod. Order No."), "Prod. Order Line No." = field("Line No.");
                     DataItemLinkReference = "Prod. Order Line";
-                    DataItemTableView = WHERE(Status = FILTER(Released));
+                    DataItemTableView = WHERE(Status = FILTER('Released|Finished'));
 
                     column(Item_No_comp; "Item No.")
                     {

@@ -54,7 +54,7 @@ reportextension 50100 QuantityExplosionofBOMExt extends "Quantity Explosion of B
     }
 
     var
-        Comments: text[200];
+        Comments: text[1000];
 
 
 

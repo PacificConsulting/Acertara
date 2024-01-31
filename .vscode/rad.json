@@ -1,1 +1,1 @@
-﻿{"Added":[],"Modified":[{"Kind":106,"Name":"RequestOptionsPage","Namespace":""},{"Id":50103,"Kind":13,"Name":"Packing Slip","Namespace":""},{"Id":50102,"Kind":13,"Name":"Tax Invoice","Namespace":""}],"Removed":[]}
+﻿{"Added":[],"Modified":[{"Kind":106,"Name":"RequestOptionsPage","Namespace":""},{"Id":50100,"Kind":27,"Name":"QuantityExplosionofBOMExt","Namespace":""},{"Id":50102,"Kind":13,"Name":"Tax Invoice","Namespace":""},{"Id":50103,"Kind":13,"Name":"Packing Slip","Namespace":""},{"Kind":115,"Name":"RequestPageExtension","Namespace":""}],"Removed":[]}

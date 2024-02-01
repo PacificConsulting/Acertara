@@ -387,7 +387,8 @@ codeunit 50100 Events
                     EmailMsg.AppendToBody('</BR></BR><font face="Georgia">1950 Lefthand Creek Lane</font>');
                     EmailMsg.AppendToBody('</BR><font face="Georgia">Longmont, CO 80501</font>');
                     EmailMsg.AppendToBody('</BR><font face="Georgia">(303) 834-8413 - main</font>');
-
+                    EmailMsg.AppendToBody('</BR></BR><font face="Georgia">An ISO 13485:2016 certified and ISO 17025:2005 accredited company</font>');
+                    EmailMsg.AppendToBody('</BR><font face="Georgia">CONFIDENTIALITY NOTICE: This e-mail transmission and any documents, files or previous e-mail messages attached to it, may contain confidential information, some or all of which may be legally privileged. If you are not the intended recipient or a person responsible for delivering it to the intended recipient, please be advised that any disclosure, copying, distribution, or any use of any information contained in or attached to this e-mail transmission is prohibited. If you have received this e-mail in error, please notify us by e-mail or telephone and destroy the original e-mail transmission and its attachments. Thank you in advance for your cooperation</font>');
                     //**** Email Send Function **** 
                     if SentmailBool = true then
                         EmailObj.Send(EmailMsg, Enum::"Email Scenario"::Default);

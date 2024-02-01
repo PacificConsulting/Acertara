@@ -9,6 +9,10 @@ reportextension 50100 QuantityExplosionofBOMExt extends "Quantity Explosion of B
             {
 
             }
+            column(vpos; vpos)
+            {
+
+            }
         }
         modify(BOMLoop)
         {
@@ -21,13 +25,14 @@ reportextension 50100 QuantityExplosionofBOMExt extends "Quantity Explosion of B
 
             begin
                 Clear(Comments);
+                clear(vpos);
                 if Level <> 0 then begin
 
                     RecProductionBOMLine.Reset();
                     RecProductionBOMLine.SetRange("Production BOM No.", BomComponent[Level]."Production BOM No.");
                     RecProductionBOMLine.SetRange("No.", BomComponent[Level]."No.");
                     if RecProductionBOMLine.FindFirst() then begin
-
+                        vpos := RecProductionBOMLine.Position;
                         RecProdBOMCommentLine.Reset();
                         RecProdBOMCommentLine.SetRange("Production BOM No.", BomComponent[Level]."Production BOM No.");
                         RecProdBOMCommentLine.SetRange("BOM Line No.", RecProductionBOMLine."Line No.");
@@ -55,7 +60,7 @@ reportextension 50100 QuantityExplosionofBOMExt extends "Quantity Explosion of B
 
     var
         Comments: text[1000];
-
+        vpos: code[20];
 
 
 
